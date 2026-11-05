@@ -1,0 +1,190 @@
+微信下单  /v3/pay/transactions/jsapi --> prepay_id
+curl -X POST \
+  https://api.mch.weixin.qq.com/v3/pay/transactions/jsapi \
+  -H "Authorization: WECHATPAY2-SHA256-RSA2048 mchid=\"1900000001\",..." \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "appid" : "wxd678efh567hg6787",
+    "mchid" : "1230000109",
+    "description" : "Image形象店-深圳腾大-QQ公仔",
+    "out_trade_no" : "1217752501201407033233368018",
+    "time_expire" : "2018-06-08T10:34:56+08:00",
+    "attach" : "自定义数据说明",
+    "notify_url" : " https://www.weixin.qq.com/web/v1/wxpay/callback",  //商户自己设置的回调接口
+    "goods_tag" : "WXG",
+    "support_fapiao" : false,
+    "amount" : {
+      "total" : 100,
+      "currency" : "CNY"
+    },
+    "payer" : {
+      "openid" : "oUpF8uMuAJO_M2pxb1Q9zNjWeS6o"
+    },
+  }'
+
+小程序调起支付 wx.requestPayment(prepay_id) 拉起服务台输入密码
+wx.requestPayment
+(
+  {
+    "timeStamp": "1414561699",
+    "nonceStr": "5K8264ILTKCH16CQ2502SI8ZNMTM67VS",
+    "package": "prepay_id=wx201410272009395522657a690389285100",
+    "signType": "RSA",
+    "paySign": "oR9d8PuhnIc+YZ8cBHFCwfgpaK9gd7vaRvkYD7rthRAZ\/X+QBhcCYL21N7cHCTUxbQ+EAt6Uy+lwSN22f5YZvI45MLko8Pfso0jm46v5hqcVwrk6uddkGuT+Cdvu4WBqDzaDjnNa5UK3GfE1Wfl2gHxIIY5lLdUgWFts17D4WuolLLkiFZV+JSHMvH7eaLdT9N5GBovBwu5yYKUR7skR8Fu+LozcSqQixnlEZUfyE55feLOQTUYzLmR9pNtPbPsu6WVhbNHMS3Ss2+AehHvz+n64GDmXxbX++IOBvm2olHu3PsOUGRwhudhVf7UcGcunXt8cqNjKNqZLhLw4jq\/xDg==",
+    "success":function(res){},
+    "fail":function(res){},
+    "complete":function(res){}
+  }
+)
+
+回调接口  /web/v1/wxpay/callback
+{
+    "id": "EV-2018022511223320873",
+    "create_time": "2015-05-20T13:29:35+08:00",
+    "resource_type": "encrypt-resource",
+    "event_type": "TRANSACTION.SUCCESS",
+    "summary": "支付成功",
+    "resource": {
+        "original_type": "transaction",
+        "algorithm": "AEAD_AES_256_GCM",
+        "ciphertext": "",    // 回调后密文包含订单信息
+        "associated_data": "",
+        "nonce": ""
+    }
+}
+
+{
+    "transaction_id":"1217752501201407033233368018",
+    "amount":{
+        "payer_total":100,
+        "total":100,
+        "currency":"CNY",
+        "payer_currency":"CNY"
+    },
+    "mchid":"1230000109",
+    "trade_state":"SUCCESS",
+    "bank_type":"CMC",
+    "promotion_detail":[
+        {
+            "amount":100,
+            "wechatpay_contribute":0,
+            "coupon_id":"109519",
+            "scope":"GLOBAL",
+            "merchant_contribute":0,
+            "name":"单品惠-6",
+            "other_contribute":0,
+            "currency":"CNY",
+            "stock_id":"931386",
+            "goods_detail":[
+                {
+                    "goods_remark":"商品备注信息",
+                    "quantity":1,
+                    "discount_amount":1,
+                    "goods_id":"M1006",
+                    "unit_price":100
+                },
+                {
+                    "goods_remark":"商品备注信息",
+                    "quantity":1,
+                    "discount_amount":1,
+                    "goods_id":"M1006",
+                    "unit_price":100
+                }
+            ]
+        },
+        {
+            "amount":100,
+            "wechatpay_contribute":0,
+            "coupon_id":"109519",
+            "scope":"GLOBAL",
+            "merchant_contribute":0,
+            "name":"单品惠-6",
+            "other_contribute":0,
+            "currency":"CNY",
+            "stock_id":"931386",
+            "goods_detail":[
+                {
+                    "goods_remark":"商品备注信息",
+                    "quantity":1,
+                    "discount_amount":1,
+                    "goods_id":"M1006",
+                    "unit_price":100
+                },
+                {
+                    "goods_remark":"商品备注信息",
+                    "quantity":1,
+                    "discount_amount":1,
+                    "goods_id":"M1006",
+                    "unit_price":100
+                }
+            ]
+        }
+    ],
+    "success_time":"2018-06-08T10:34:56+08:00",
+    "payer":{
+        "openid":"oUpF8uMuAJO_M2pxb1Q9zNjWeS6o"
+    },
+    "out_trade_no":"1217752501201407033233368018",
+    "appid":"wxd678efh567hg6787",
+    "trade_state_desc":"支付成功",
+    "trade_type":"APP",
+    "attach":"自定义数据",
+    "scene_info":{
+        "device_id":"013467007045764"
+    }
+}
+
+订单查询 /v3/pay/transactions/out-trade-no/{out_trade_no}
+curl -X GET \
+  https://api.mch.weixin.qq.com/v3/pay/transactions/out-trade-no/1217752501201407033233368018?mchid=1230000109 \
+  -H "Authorization: WECHATPAY2-SHA256-RSA2048 mchid=\"1900000001\",..." \
+  -H "Accept: application/json"
+
+{
+  "appid" : "wxd678efh567hg6787",
+  "mchid" : "1230000109",
+  "out_trade_no" : "1217752501201407033233368018",
+  "transaction_id" : "1217752501201407033233368018",
+  "trade_type" : "MICROPAY",
+  "trade_state" : "SUCCESS",
+  "trade_state_desc" : "支付成功",
+  "bank_type" : "CMC",
+  "attach" : "自定义数据",
+  "success_time" : "2018-06-08T10:34:56+08:00",
+  "payer" : {
+    "openid" : "oUpF8uMuAJO_M2pxb1Q9zNjWeS6o\t"
+  },
+  "amount" : {
+    "total" : 100,
+    "payer_total" : 100,
+    "currency" : "CNY",
+    "payer_currency" : "CNY"
+  },
+  "scene_info" : {
+    "device_id" : "013467007045764"
+  },
+  "promotion_detail" : [
+    {
+      "coupon_id" : "109519",
+      "name" : "单品惠-6",
+      "scope" : "GLOBAL",
+      "type" : "CASH",
+      "amount" : 100,
+      "stock_id" : "931386",
+      "wechatpay_contribute" : 0,
+      "merchant_contribute" : 0,
+      "other_contribute" : 0,
+      "currency" : "CNY",
+      "goods_detail" : [
+        {
+          "goods_id" : "M1006",
+          "quantity" : 1,
+          "unit_price" : 100,
+          "discount_amount" : 1,
+          "goods_remark" : "商品备注信息"
+        }
+      ]
+    }
+  ]
+}

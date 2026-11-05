@@ -1,0 +1,13 @@
+静态服务器	root + gzip_static
+反向代理	proxy_pass
+负载均衡	upstream + 调度算法
+限流	limit_req / limit_conn
+缓存	proxy_cache
+灰度	map / split_clients
+安全	deny / auth_basic / 安全头
+实时处理	Lua / image_filter
+观测	log_format + stub_status
+平滑升级	reload / binary upgrade
+
+
+docker exec kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list

@@ -1,0 +1,8 @@
+###
+GET {{http}}/ws/v1/health
+###
+
+###
+GET {{ws}}/ws/v1/handshake?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOjEsInd4T3BlbklEIjoib1pEZHUxLVFXYWNwTUg4WE9sbzItVDBackY2ZyIsImlzcyI6InNmZ28iLCJleHAiOjE3NzgyMjk3MTUsIm5iZiI6MTc3NTYzNzcxNSwiaWF0IjoxNzc1NjM3NzE1fQ.emwIQUuGdBaLn8twwiJTznXdoqop8w1HEoWEJuPJQgU
+
+###

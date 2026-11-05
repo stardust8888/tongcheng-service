@@ -1,0 +1,38 @@
+最小组合建议（2025 国内开箱即用）
+Harbor （私仓+扫描+签名）
+Kaniko 或 buildkit （无守护构建）
+Dragonfly （P2P 缓存加速）
+Kyverno （镜像安全策略）
+装好上面 4 件套，就能在 K8s 里完成 “构建→扫描→签名→推送→缓存→准入” 全链路镜像管理，全程无需 SSH 到节点，全部通过 Helm/CRD 声明即可。
+一句话总结
+K8s 并不直接“build”镜像；用 Harbor 做仓、Kaniko/buildkit 做构建、Dragonfly 做缓存、Kyverno 做扫描与策略，4 个插件/工具即可实现云原生镜像全生命周期管理。
+
+apiVersion - 创建该对象所使用的 Kubernetes API 的版本
+kind - 想要创建的对象的类别
+https://kubernetes.io/zh-cn/docs/reference/kubernetes-api/workload-resources/pod-v1/#PodSpec
+metadata - 帮助唯一标识对象的一些数据，包括一个 name 字符串、UID 和可选的 namespace
+spec - 你所期望的该对象的状态
+
+spec:
+  containers:
+  - name: web
+    image: myapp:v1.0
+    envFrom:                          # ① 环境变量
+      - configMapRef:
+          name: app-cm
+    volumeMounts:                     # ② 文件挂载
+    - name: conf
+      mountPath: /etc/app/config.ini
+      subPath: config.ini
+  imagePullSecrets:                   # ③ 拉取密钥
+  - name: reg-secret
+  volumes:
+  - name: conf
+    configMap:
+      name: app-cm
+
+① client → gRPC → Leader etcd
+② Leader 把命令追加到 WAL 文件（顺序写，落盘 fsync）
+③ 并行通过 Raft 把 WAL 条目复制给 Follower；多数派 fsync 成功 后提交
+④ 提交后写 内存 B+ 树（BoltDB 页缓存）→ 返回 client 成功
+⑤ 后台 定期（可配置 10 000 条）把内存 B+ 树整棵 snapshot 到 .snap.db，并清理旧 WAL

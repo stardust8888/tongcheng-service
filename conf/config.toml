@@ -1,0 +1,82 @@
+# 应用配置
+[app]
+name = "tongcheng"
+version = "1.0.0"
+
+# 数据库配置
+[mysql]
+address = "127.0.0.1:3306"
+username = "root"
+password = "635512079cb2a4814c2afeffd400d860154a402058e3be86d606f6986cd05818"
+dbname = "sfserver"
+migrate = 0
+
+[mysql_admin]
+address = "127.0.0.1:3306"
+username = "root"
+password = "635512079cb2a4814c2afeffd400d860154a402058e3be86d606f6986cd05818"
+dbname = "sfadmin"
+migrate = 0
+
+[redis]
+addresses = ["127.0.0.1:6379"]
+username = ""
+password = "635512079cb2a4814c2afeffd400d860154a402058e3be86d606f6986cd05818"
+
+[log]
+output = "console"
+level = -1
+path = "./logs/"
+max_size = 100
+max_backups = 30
+max_age = 7
+compress = true
+
+[secret]
+jwt_secret = "2e30df67f9a9b9d941785077d5356465"
+info_secret = "9f47bc2186035dea52cf09b71e84ad30"
+pwd_secret = "bad77bce052ce6bcd74236b8d57ca87c"
+config_secret = "8de1ab8c02e1d9eb8014cb1a05d4499a"
+
+[wx]
+endpoint = "https://api.weixin.qq.com"
+app_id = "wx0eedd39644ad8b15"
+secret = "62dd3e745388f2e6c9fa8bc9d765faa4"
+pay_endpoint = "https://api.mch.weixin.qq.com"
+pay_endpoint_callback = "https://xxx"
+mch_id = ""
+
+[minio]
+addr = "127.0.0.1:9000"
+username = "minio"
+password = "635512079cb2a4814c2afeffd400d860154a402058e3be86d606f6986cd05818"
+use_ssl = false
+bucket = "sfserver"
+
+[cron]
+save_message = "0 3 * * *"
+delete_user = "0 * * * *"
+
+# Kafka 配置（github.com/IBM/sarama）
+[kafka]
+version = "3.0.0"
+
+[kafka.producer_message]
+brokers = ["127.0.0.1:9092"]
+topic = "message_push"
+async = false            # true=异步生产者(不等确认即返回)；false=同步等待确认
+required_backs = 1       # -1=all(所有 ISR)，1=leader，0=none
+
+[kafka.consumer_message_push]
+brokers = ["127.0.0.1:9092"]
+topic = "message_push"
+group_id = "message-push-consumer"
+start_offset = -2        # -2=earliest，-1=latest
+commit_interval = 5000   # 自动提交间隔(ms)，0=手动(由 session 结束提交)
+
+[kafka.consumer_message_save]
+brokers = ["127.0.0.1:9092"]
+topic = "message_save"
+group_id = "message-save-consumer"
+start_offset = -2
+commit_interval = 5000

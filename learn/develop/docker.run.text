@@ -1,0 +1,95 @@
+本地
+docker network create sf-net
+docker run -d --name mysql --network sf-net --restart=unless-stopped -p 3306:3306 -e MYSQL_ROOT_PASSWORD=Qwer12356 -e TZ=Asia/Shanghai -v mysql-data:/var/lib/mysql mysql
+docker run -d --name redis --network sf-net --restart=unless-stopped -p 6379:6379 -v redis-data:/data redis redis-server --requirepass Qwer12356 --appendonly yes
+docker run -d --name minio --network sf-net --restart=unless-stopped -p 9000:9000 -p 9001:9001 -e MINIO_ROOT_USER=minio -e MINIO_ROOT_PASSWORD=Qwer12356 -v minio-data:/data minio server /data --console-address ":9001"
+docker run -d `
+  --name kafka `
+  --network sf-net `
+  --restart=unless-stopped `
+  -p 9092:9092 `
+  -e KAFKA_NODE_ID=1 `
+  -e KAFKA_PROCESS_ROLES=broker,controller `
+  -e KAFKA_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093 `
+  -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 `
+  -e KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER `
+  -e KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT `
+  -e KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka:9093 `
+  -e KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT `
+  -e CLUSTER_ID=MkU3OEVBNTcwNTJENDM2Qk `
+  -e TZ=Asia/Shanghai `
+  -v kafka-data:/var/lib/kafka/data `
+  -v kafka-logs:/tmp/kraft-combined-logs `
+  apache/kafka:latest
+
+4.1 Docker 启动
+# MySQL
+docker network create sf-net
+docker run -d --name mysql --network sf-net --restart=unless-stopped \
+  -p 3306:3306 \
+  -e MYSQL_ROOT_PASSWORD=Qwer12356 \
+  -e TZ=Asia/Shanghai \
+  -v /opt/mysql/conf/mysql-dev.cnf:/etc/mysql/conf.d/z-dev.cnf:ro \
+  -v /opt/mysql/data:/var/lib/mysql \
+  -v /opt/mysql/logs:/var/log/mysql \
+  mysql:8.0
+
+# Redis
+docker run -d --name redis --network sf-net --restart=unless-stopped \
+  -p 6379:6379 \
+  -v /opt/redis/conf/redis-dev.conf:/usr/local/etc/redis/redis.conf:ro \
+  -v /opt/redis/data:/data \
+  -v /opt/redis/logs:/var/log/redis \
+  redis:7-alpine redis-server /usr/local/etc/redis/redis.conf
+
+# minIO
+docker run -d --name minio --network sf-net --restart=unless-stopped \
+  -p 9000:9000 -p 9001:9001 \
+  -v /opt/minio/data:/data \
+  -e "MINIO_ROOT_USER=minio" \
+  -e "MINIO_ROOT_PASSWORD=Qwer12356" \
+  minio/minio:latest server /data --console-address ":9001"
+
+//删除none镜像
+docker image prune
+//打包镜像
+docker build --build-arg APP_NAME=tongcheng-admin -t tongcheng-admin:latest .
+docker build --build-arg APP_NAME=tongcheng-web -t tongcheng-web:latest .
+//启动镜像
+docker run -d --name tongcheng-web --network sf-net --restart=unless-stopped \
+    -p 12001:12001 \
+    -v /opt/tongcheng/logs/web:/app/service/web/logs \
+    -v /opt/tongcheng/conf/web:/app/service/web/conf \
+  tongcheng-web:latest
+
+docker run -d --name tongcheng-admin --network sf-net --restart=unless-stopped \
+    -p 12002:12002 \
+    -v /opt/tongcheng/logs/admin:/app/service/admin/logs \
+    -v /opt/tongcheng/conf/admin:/app/service/admin/conf \
+  tongcheng-admin:latest
+//停止容器
+docker stop tongcheng-web
+docker kill tongcheng-web  //强制停止
+docker stop tongcheng-admin
+//删除镜像
+docker rmi tongcheng-web:latest
+docker rmi tongcheng-admin:latest
+//二进制编译
+$env:GOOS="linux"; $env:GOARCH="amd64"; go build -v -o ./service/bin/tongcheng-web ./service/web/main.go 2>&1
+$env:GOOS="linux"; $env:GOARCH="amd64"; go build -v -o ./service/bin/tongcheng-admin ./service/admin/main.go 2>&1
+$env:GOOS="linux"; $env:GOARCH="amd64"; go build -v -o ./service/bin/tongcheng-ws ./service/ws/main.go 2>&1
+$env:GOOS="linux"; $env:GOARCH="amd64"; go build -v -o ./service/bin/tongcheng-file ./service/file/main.go 2>&1
+$env:GOOS="linux"; $env:GOARCH="amd64"; go build -v -o ./service/bin/tongcheng-cron ./service/cron/main.go 2>&1
+//二进制启动
+curl http://127.0.0.1:12001/web/v1/health
+curl http://120.55.65.208:12001/web/v1/health
+ss -tlnp | grep 12001
+ps -ef|grep tongcheng
+chmod +x ./bin/tongcheng-web
+nohup ./bin/tongcheng-web > ./logs/web.log 2>&1 &
+nohup ./bin/tongcheng-admin > ./logs/admin.log 2>&1 &
+nohup ./bin/tongcheng-ws > ./logs/ws.log 2>&1 &
+nohup ./bin/tongcheng-file > ./logs/file.log 2>&1 &
+nohup ./bin/tongcheng-cron > ./logs/cron.log 2>&1 &
+//查看日志
+tail -n 100 ./logs/web.log

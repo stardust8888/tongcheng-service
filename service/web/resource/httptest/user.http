@@ -1,0 +1,5 @@
+###
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=GoLand
+
+###
